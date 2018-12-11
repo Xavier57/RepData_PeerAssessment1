@@ -36,6 +36,34 @@ The median total number of steps by day is `r median_steps`.
 
 ## What is the average daily activity pattern?
 
+* Calculate average steps for each interval for all days. 
+
+* Plot the Average Number Steps per Day by Interval. 
+
+* Find interval with most average steps. 
+
+```{r}
+##Agregates the data per interval, using the mean function
+stepsbyinterval <- aggregate(data$steps, by=list(data$interval), na.rm=TRUE, FUN=mean)
+names(stepsbyinterval)=c("interval","steps")
+
+##Plotting the mean number of steps per interval
+plot(stepsbyinterval$interval,stepsbyinterval$steps, type="l", xlab="Interval", ylab="Number of Steps",main="Average Number of Steps per Day by Interval")
+
+
+##Retrieving the interval with the max number of steps
+maxinterval <- stepsbyinterval[which.max(steps_by_interval$steps),1]
+
+```
+
+The interval, which is containing the maximum mean number of steps over all days is `r maxinterval`.
+
+
+
+
+
+
+
 
 
 ## Imputing missing values
