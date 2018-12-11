@@ -52,7 +52,7 @@ plot(stepsbyinterval$interval,stepsbyinterval$steps, type="l", xlab="Interval", 
 
 
 ##Retrieving the interval with the max number of steps
-maxinterval <- stepsbyinterval[which.max(steps_by_interval$steps),1]
+maxinterval <- stepsbyinterval[which.max(stepsbyinterval$steps),1]
 
 ```
 
