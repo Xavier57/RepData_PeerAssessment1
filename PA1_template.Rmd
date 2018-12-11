@@ -7,7 +7,7 @@ output:
 
 
 ## Loading and preprocessing the data
-Download and unzip the data before storing it in the "data" dataframe
+Downloads and unzips the data before storing it in the "data" dataframe
 ```{r}
 ##getting the file from its url
 url <- "http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
@@ -18,14 +18,21 @@ data <- read.csv("activity.csv")
 
 ```
 ## What is mean total number of steps taken per day?
-Agregate the number of steps taken each date and plot in an histogram
+Agregates the number of steps taken each date and plots in an histogram
+Calculates the mean an median values of steps per day
 ```{r}
 ##aggregating the number of steps for each day
-stepsbyday <- aggregate(data$steps, by=list(data$date), FUN=sum)
+stepsbyday <- aggregate(data$steps, by=list(data$date), na.rm=TRUE, FUN=sum)
 names(stepsbyday)<-c("day","steps")
 ##generating the histogram
 hist(stepsbyday$steps, main = paste("Total Steps Each Day"), col="blue", xlab="Number of Steps")
+##calculating the mean and median values
+mean_steps <- mean(stepsbyday$steps)
+median_steps <- median(stepsbyday$steps)
 ```
+
+The mean total number of steps by day is `r mean_steps`.
+The median total number of steps by day is `r median_steps`.
 
 ## What is the average daily activity pattern?
 
