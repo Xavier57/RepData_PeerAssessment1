@@ -139,3 +139,38 @@ The difference in the median total number of steps by day with imputing or witho
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+
+```{r cache=TRUE}
+
+#creating a new column in our dataset, to classify the part of th week (weekend or weekday)
+completed_data['weekpart'] <- weekdays(as.Date(completed_data$date))
+completed_data$weekpart[completed_data$weekpart  %in% c('samedi','dimanche','Saturday','Sunday') ] <- "weekend"
+
+completed_data$weekpart[completed_data$weekpart != "weekend"] <- "weekday"
+
+
+# convert $weekpart from character to factor for use as a facet
+completed_data$weekpart <- as.factor(completed_data$weekpart)
+
+# calculate average steps by interval across all days
+completed_stepsbyinterval <- aggregate(steps ~ interval + weekpart, completed_data, mean)
+
+# plotting the results
+
+library(ggplot2)
+
+qplot(interval, 
+      steps, 
+      data = completed_stepsbyinterval, 
+      type = 'l', 
+      geom=c("line"),
+      xlab = "Interval", 
+      ylab = "Number of steps", 
+      main = "") +
+  facet_wrap(~ weekpart, ncol = 1)
+
+
+```
+
+As we can see in the graphic above, the biggest difference is in the morning: the number of steps is increasing earlier on weekdays as for the weekends. As we could expect, our test person stand of a bit later on the week end :-)
