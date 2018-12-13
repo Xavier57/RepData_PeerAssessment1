@@ -1,0 +1,225 @@
+---
+
+title: "Reproducible Research: Peer Assessment 1"
+
+output: 
+
+  html_document:
+
+    keep_md: true
+
+---
+
+
+
+
+
+## Loading and preprocessing the data
+
+Downloads and unzips the data before storing it in the "data" dataframe
+
+
+```r
+##getting the file from its url
+
+url <- "http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+
+download.file(url, "repdata-data-activity.zip", mode="wb")
+
+unzip("repdata-data-activity.zip")
+
+data <- read.csv("activity.csv")
+
+##preprocessing the file
+```
+
+## What is mean total number of steps taken per day?
+
+Agregates the number of steps taken each date and plots in an histogram
+
+Calculates the mean an median values of steps per day
+
+
+```r
+##aggregating the number of steps for each day
+
+stepsbyday <- aggregate(data$steps, by=list(data$date), na.rm=TRUE, FUN=sum)
+
+names(stepsbyday)<-c("day","steps")
+
+##generating the histogram
+
+hist(stepsbyday$steps, main = paste("Total Steps Each Day"), col="blue", xlab="Number of Steps")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+
+```r
+##calculating the mean and median values
+
+mean_steps <- mean(stepsbyday$steps)
+
+median_steps <- median(stepsbyday$steps)
+```
+
+
+
+The mean total number of steps by day is 9354.2295082.
+
+The median total number of steps by day is 10395.
+
+
+
+## What is the average daily activity pattern?
+
+
+* Calculate average steps for each interval for all days. 
+
+* Plot the Average Number Steps per Day by Interval. 
+
+* Find interval with most average steps. 
+
+
+```r
+##Agregates the data per interval, using the mean function
+stepsbyinterval <- aggregate(data$steps, by=list(data$interval), na.rm=TRUE, FUN=mean)
+names(stepsbyinterval)=c("interval","steps")
+
+##Plotting the mean number of steps per interval
+plot(stepsbyinterval$interval,stepsbyinterval$steps, type="l", xlab="Interval", ylab="Number of Steps",main="Average Number of Steps per Day by Interval")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
+```r
+##Retrieving the interval with the max number of steps
+maxinterval <- stepsbyinterval[which.max(stepsbyinterval$steps),1]
+```
+
+The interval, which is containing the maximum mean number of steps over all days is 835.
+
+
+
+
+
+
+## Imputing missing values
+
+Since we have calculated the mean steps for intervalls from all days, we can replace the missing values by these means and check how this affects the histogram
+
+Here is the new histogram 
+
+```r
+# Writes a vector with FALSE and TRUE (FALSE corespond to a $steps with NA value)
+
+boolean <- complete.cases(data$steps)
+#Initializes the completed_data with data
+completed_data<-data
+##Replaces all NA values
+for (i in 1:nrow(data)) {
+  if (boolean[i]==FALSE) {
+    interval <- data$interval[i]
+    step_mean <- stepsbyinterval$steps[
+      stepsbyinterval$interval == interval]
+    completed_data$steps[i] <- step_mean
+  }
+}
+
+## calculate  total number of steps taken each day, but this time with imputed valued
+
+##aggregating the number of steps for each day
+
+completed_stepsbyday <- aggregate(completed_data$steps, by=list(completed_data$date), na.rm=TRUE, FUN=sum)
+
+names(completed_stepsbyday)<-c("day","steps")
+
+##generating the histogram
+
+hist(completed_stepsbyday$steps, main = paste("Total Steps Each Day"), col="red", xlab="Number of Steps")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
+```r
+##calculating the mean and median values
+
+completed_mean_steps <- mean(completed_stepsbyday$steps)
+
+completed_median_steps <- median(completed_stepsbyday$steps)
+```
+
+The mean total number of steps by day after imputing the NA values is 1.0766189\times 10^{4}.
+
+The median total number of steps by day after imputing the NA values is 1.0766189\times 10^{4}.
+
+Plotting both histograms for comparison
+
+```r
+#Create an overlaying histogram to show differences. 
+
+hist(completed_stepsbyday$steps, main = paste("Total Steps Each Day"), col=rgb(1,0,0,0.5), xlab="Number of Steps")
+
+
+hist(stepsbyday$steps, main = paste("Total Steps Each Day"),  col=rgb(0,0,1,0.5), xlab="Number of Steps", add=T)
+
+legend("topright", c("Imputed", "Non-imputed"), col=c("red", "blue"), lwd=10)
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
+
+```r
+##calculating the differences in mean and median values
+
+mean_diff <- completed_mean_steps - mean_steps
+
+median_diff <- completed_median_steps - median_steps
+```
+
+We can see that we have more days now which are closer to the mean
+
+The difference in the mean total number of steps by day with imputing or without imputing is 1411.959171.
+
+The difference in the median total number of steps by day with imputing or without imputing is 371.1886792.
+
+
+
+
+## Are there differences in activity patterns between weekdays and weekends?
+
+
+
+```r
+#creating a new column in our dataset, to classify the part of th week (weekend or weekday)
+completed_data['weekpart'] <- weekdays(as.Date(completed_data$date))
+completed_data$weekpart[completed_data$weekpart  %in% c('samedi','dimanche','Saturday','Sunday') ] <- "weekend"
+
+completed_data$weekpart[completed_data$weekpart != "weekend"] <- "weekday"
+
+
+# convert $weekpart from character to factor for use as a facet
+completed_data$weekpart <- as.factor(completed_data$weekpart)
+
+# calculate average steps by interval across all days
+completed_stepsbyinterval <- aggregate(steps ~ interval + weekpart, completed_data, mean)
+
+# plotting the results
+
+library(ggplot2)
+
+qplot(interval, 
+      steps, 
+      data = completed_stepsbyinterval, 
+      type = 'l', 
+      geom=c("line"),
+      xlab = "Interval", 
+      ylab = "Number of steps", 
+      main = "") +
+  facet_wrap(~ weekpart, ncol = 1)
+```
+
+```
+## Warning: Ignoring unknown parameters: type
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+As we can see in the graphic above, the biggest difference is in the morning: the number of steps is increasing earlier on weekdays as for the weekends. As we could expect, our test person stand of a bit later on the week end :-)
