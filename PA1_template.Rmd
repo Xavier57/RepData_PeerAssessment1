@@ -59,14 +59,82 @@ maxinterval <- stepsbyinterval[which.max(stepsbyinterval$steps),1]
 The interval, which is containing the maximum mean number of steps over all days is `r maxinterval`.
 
 
-
-
-
-
-
-
-
 ## Imputing missing values
+
+
+Since we have calculated the mean steps for intervalls from all days, we can replace the missing values by these means and check how this affects the histogram
+
+Here is the new histogram 
+```{r cache=TRUE}
+
+# Writes a vector with FALSE and TRUE (FALSE corespond to a $steps with NA value)
+
+boolean <- complete.cases(data$steps)
+#Initializes the completed_data with data
+completed_data<-data
+##Replaces all NA values
+for (i in 1:nrow(data)) {
+  if (boolean[i]==FALSE) {
+    interval <- data$interval[i]
+    step_mean <- stepsbyinterval$steps[
+      stepsbyinterval$interval == interval]
+    completed_data$steps[i] <- step_mean
+  }
+}
+
+## calculate  total number of steps taken each day, but this time with imputed valued
+
+##aggregating the number of steps for each day
+
+completed_stepsbyday <- aggregate(completed_data$steps, by=list(completed_data$date), na.rm=TRUE, FUN=sum)
+
+names(completed_stepsbyday)<-c("day","steps")
+
+##generating the histogram
+
+hist(completed_stepsbyday$steps, main = paste("Total Steps Each Day"), col="red", xlab="Number of Steps")
+
+##calculating the mean and median values
+
+completed_mean_steps <- mean(completed_stepsbyday$steps)
+
+completed_median_steps <- median(completed_stepsbyday$steps)
+
+
+```
+
+The mean total number of steps by day after imputing the NA values is `r completed_mean_steps`.
+
+The median total number of steps by day after imputing the NA values is `r completed_median_steps`.
+
+Plotting both histograms for comparison
+```{r cache=TRUE}
+
+#Create an overlaying histogram to show differences. 
+
+hist(completed_stepsbyday$steps, main = paste("Total Steps Each Day"), col=rgb(1,0,0,0.5), xlab="Number of Steps")
+
+
+hist(stepsbyday$steps, main = paste("Total Steps Each Day"),  col=rgb(0,0,1,0.5), xlab="Number of Steps", add=T)
+
+legend("topright", c("Imputed", "Non-imputed"), col=c("red", "blue"), lwd=10)
+
+
+##calculating the differences in mean and median values
+
+mean_diff <- completed_mean_steps - mean_steps
+
+median_diff <- completed_median_steps - median_steps
+
+
+```
+
+We can see that we have more days now which are closer to the mean
+
+The difference in the mean total number of steps by day with imputing or without imputing is `r mean_diff`.
+
+The difference in the median total number of steps by day with imputing or without imputing is `r median_diff`.
+
 
 
 
